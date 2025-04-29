@@ -46,8 +46,9 @@ def compute_bias_variance(degree, n_experiments=100, n_points=100):
 # Streamlit app
 st.title("Bias-Variance Tradeoff in Predicting Footballer Prices")
 
-st.markdown(""" 
-## Introduction
+# Full explanation appears immediately
+st.header("Introduction")
+st.markdown("""
 In this dashboard, we model a real-world challenge: predicting a football player's **market value** based on their **season-long average performance rating** (out of 10) in a **top football league** (Premier League, La Liga, Serie A, Bundesliga, Ligue 1).
 
 Players are typically rated between **5 and 8.5**:
@@ -59,8 +60,10 @@ The relationship between **rating and price** is **non-linear**:
 - Prices grow moderately up to rating 7.5
 - Grow faster between 7.5 and 8.5
 - Explode after 8.5 (elite players)
+""")
 
-## Modeling Approach
+st.header("Modeling Approach")
+st.markdown("""
 Ratings are drawn from a normal distribution (centered at 7.0, clipped between 1 and 10).  
 Prices are determined by:
 - Linear growth up to 7.5
@@ -73,8 +76,10 @@ Noise (small random fluctuation) is added to simulate real-world uncertainty.
 - If rating ≤ 7.5: Price = 6 × rating
 - If 7.5 < rating ≤ 8.5: Price = 6 × rating + 20 × (rating - 7.5)^2
 - If rating > 8.5: Price = 6 × rating + 20 + 120 × (rating - 8.5)^4
+""")
 
-## Bias-Variance Decomposition
+st.header("Bias-Variance Decomposition")
+st.markdown("""
 Predictive models face a tradeoff:
 - **Simple models** (low degree polynomials): High Bias, Low Variance
 - **Complex models** (high degree polynomials): Low Bias, High Variance
@@ -85,9 +90,10 @@ The total prediction error (MSE) decomposes into:
 - **Noise**: irreducible randomness
 
 **MSE = Bias² + Variance + Noise**
+""")
 
-## Bias², Variance, and Noise Explained (with Football Examples)
-
+st.header("Bias², Variance, and Noise Explained (with Football Examples)")
+st.markdown("""
 **Bias² (Systematic Error):**  
 Suppose we use a **very simple model** (a straight line) to predict prices.  
 It will **miss** the fact that top players (ratings >8.5) become **much more expensive**.  
@@ -101,14 +107,17 @@ This makes the model **unstable** and causes **high Variance**.
 **Noise (Randomness):**  
 Even if a player has a high rating, external factors (injury, contract issues) can **lower their transfer value unexpectedly**.  
 This random effect is **Noise**, which **no model can perfectly predict**.
+""")
 
-## How to Use the Dashboard
+st.header("How to Use the Dashboard")
+st.markdown("""
 Use the slider below to adjust model complexity (polynomial degree) and observe:
 - How Bias² decreases with complexity
 - How Variance increases with complexity
 - How MSE finds a minimum at a good model complexity
 """)
 
+# Now show the interactive part
 degree = st.slider("Choose model complexity (polynomial degree):", 1, 10, 1)
 
 x_vals, bias2, var, noise, mse = compute_bias_variance(degree)
