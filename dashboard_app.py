@@ -13,7 +13,7 @@ def true_price(rating):
     elif rating <= 8.5:
         price = 0 + 6 * rating + 20 * (rating - 7.5)**2
     else:
-        price = 0 + 6 * rating + 20 * (1.0)**2 + 120 * (rating - 8.5)**4
+        price = 0 + 6 * rating + 20 + 120 * (rating - 8.5)**4
     return price
 
 # Generate dataset
@@ -45,23 +45,68 @@ def compute_bias_variance(degree, n_experiments=100, n_points=100):
 
 # Streamlit app
 st.title("Bias-Variance Tradeoff in Predicting Footballer Prices")
-st.markdown("""
-### Story
-We are modeling the relationship between a footballer's **season average rating** (out of 10) in **top leagues** (Premier League, La Liga, etc.) and their **market selling price**.
 
-- Average players (rating 6–7.5): moderate prices (€30M–70M).
-- Good players (rating 7.5–8.5): faster price growth.
-- Top players (rating >8.5): prices explode (€150M+).
+st.markdown(""" 
+## Introduction
+In this dashboard, we model a real-world challenge: predicting a football player's **market value** based on their **season-long average performance rating** (out of 10) in a **top football league** (Premier League, La Liga, Serie A, Bundesliga, Ligue 1).
 
-### What you see
-This dashboard simulates multiple datasets and fits models of different complexity to predict player prices. We decompose the prediction error into:
+Players are typically rated between **5 and 8.5**:
+- Average players (5–7.5): moderate value
+- Good players (7.5–8.5): higher value
+- Exceptional players (>8.5): extremely rare and expensive
 
-- **Bias²**: systematic error.
-- **Variance**: instability due to different training data.
-- **Noise**: randomness we can't remove.
-- **MSE**: Total mean squared error.
+The relationship between **rating and price** is **non-linear**:
+- Prices grow moderately up to rating 7.5
+- Grow faster between 7.5 and 8.5
+- Explode after 8.5 (elite players)
 
-Try changing model complexity below!
+## Modeling Approach
+Ratings are drawn from a normal distribution (centered at 7.0, clipped between 1 and 10).  
+Prices are determined by:
+- Linear growth up to 7.5
+- Quadratic growth from 7.5 to 8.5
+- Quartic explosion above 8.5
+
+Noise (small random fluctuation) is added to simulate real-world uncertainty.
+
+**Price Formula:**
+- If rating ≤ 7.5: Price = 6 × rating
+- If 7.5 < rating ≤ 8.5: Price = 6 × rating + 20 × (rating - 7.5)^2
+- If rating > 8.5: Price = 6 × rating + 20 + 120 × (rating - 8.5)^4
+
+## Bias-Variance Decomposition
+Predictive models face a tradeoff:
+- **Simple models** (low degree polynomials): High Bias, Low Variance
+- **Complex models** (high degree polynomials): Low Bias, High Variance
+
+The total prediction error (MSE) decomposes into:
+- **Bias²**: average wrongness
+- **Variance**: instability due to sample variation
+- **Noise**: irreducible randomness
+
+**MSE = Bias² + Variance + Noise**
+
+## Bias², Variance, and Noise Explained (with Football Examples)
+
+**Bias² (Systematic Error):**  
+Suppose we use a **very simple model** (a straight line) to predict prices.  
+It will **miss** the fact that top players (ratings >8.5) become **much more expensive**.  
+Thus, it **underestimates** the prices of stars like Messi, Mbappé, or Haaland — leading to **high Bias²**.
+
+**Variance (Instability):**  
+Suppose we use a **very complex model** (like a 10th-degree polynomial).  
+Small changes in training data — like one extra player rated 8.3 instead of 8.2 — can **change the predictions a lot**.  
+This makes the model **unstable** and causes **high Variance**.
+
+**Noise (Randomness):**  
+Even if a player has a high rating, external factors (injury, contract issues) can **lower their transfer value unexpectedly**.  
+This random effect is **Noise**, which **no model can perfectly predict**.
+
+## How to Use the Dashboard
+Use the slider below to adjust model complexity (polynomial degree) and observe:
+- How Bias² decreases with complexity
+- How Variance increases with complexity
+- How MSE finds a minimum at a good model complexity
 """)
 
 degree = st.slider("Choose model complexity (polynomial degree):", 1, 10, 1)
@@ -70,9 +115,9 @@ x_vals, bias2, var, noise, mse = compute_bias_variance(degree)
 
 fig, ax = plt.subplots(figsize=(8, 5))
 ax.plot(x_vals, mse, label="MSE (Total Error)", linewidth=2)
-ax.plot(x_vals, bias2, label="Bias² (Error from wrong model)", linestyle='--')
-ax.plot(x_vals, var, label="Variance (Error from instability)", linestyle='--')
-ax.plot(x_vals, noise, label="Noise (Unavoidable error)", linestyle='--')
+ax.plot(x_vals, bias2, label="Bias² (Systematic error)", linestyle='--')
+ax.plot(x_vals, var, label="Variance (Instability)", linestyle='--')
+ax.plot(x_vals, noise, label="Noise (Randomness)", linestyle='--')
 ax.set_xlabel("Average Rating (1-10)")
 ax.set_ylabel("Error Components")
 ax.set_title("MSE Decomposition by Model Complexity")
